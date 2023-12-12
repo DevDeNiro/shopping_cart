@@ -1,3 +1,0 @@
-product_api:
-    resource: ../src/Controller/ProductsController.php
-    type: annotation

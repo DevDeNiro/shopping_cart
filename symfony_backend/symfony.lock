@@ -1,4 +1,10 @@
 {
+    "digital-craftsman/cqrs": {
+        "version": "v0.10.0"
+    },
+    "digital-craftsman/ids": {
+        "version": "v0.8.0"
+    },
     "doctrine/annotations": {
         "version": "2.0",
         "recipe": {

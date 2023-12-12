@@ -4,15 +4,15 @@ namespace App\Entity;
 
 use App\Repository\ProductsRepository;
 use Doctrine\DBAL\Types\Types;
+use App\ValueObject\ProductId;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ProductsRepository::class)]
 class Products
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
+    #[ORM\Column(type: "product_id")]
+    private ProductId $id;
 
     #[ORM\Column(length: 255)]
     private ?string $name = null;
@@ -23,12 +23,12 @@ class Products
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
-    public function getId(): ?int
+    public function getId(): ProductId
     {
         return $this->id;
     }
 
-    public function setId(string $id): static
+    public function setId(ProductId $id): static
     {
         $this->id = $id;
 
