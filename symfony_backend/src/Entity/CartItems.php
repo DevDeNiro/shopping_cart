@@ -15,7 +15,10 @@ class CartItems
     #[ORM\Column(type: "cart_items_id")]
     private CartItemsId $id;
 
+    #[ORM\Column(type: "cart_id")]
     private ?CartId $cart_id = null;
+
+    #[ORM\Column(type: "product_id")]
     private ?ProductId $product_id = null;
 
     #[ORM\Column(nullable: true)]

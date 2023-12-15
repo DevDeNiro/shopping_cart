@@ -4,9 +4,12 @@ namespace App\Controller;
 
 use App\Command\CreateCartCommand;
 use App\Command\AddItemToCartCommand;
+use App\Command\RemoveItemFromCartCommand;
+use App\Command\UpdateCartItemQuantityCommand;
 use App\Query\GetCartQuery;
 use App\ValueObject\CartId;
 use App\ValueObject\ProductId;
+use App\ValueObject\CartItemsId;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -50,12 +53,10 @@ class CartController extends AbstractController
         $envelope = $this->commandBus->dispatch($query);
         $handledStamp = $envelope->last(HandledStamp::class);
 
-        // Check if the handler returned a result.
         if ($handledStamp && $cart = $handledStamp->getResult()) {
             $cartData = [
                 'id' => (string) $cart->getId(),
                 'sessionId' => $cart->getSessionId(),
-                // Add other Cart fields here.
             ];
 
             return $this->json($cartData);
@@ -68,8 +69,13 @@ class CartController extends AbstractController
     public function postCartItems(Request $request): Response
     {
         $sessionId = $request->headers->get('X-Session-Id');
+        
         $data = json_decode($request->getContent(), true);
-        $productId = isset($data['productId']) ? new ProductId($data['productId']) : null;
+        try {
+            $productId = isset($data['productId']) ? new ProductId($data['productId']) : null;
+        } catch (\Exception $e) {
+            return $this->json(['error' => 'Product not found'], Response::HTTP_NOT_FOUND);
+        }
         $quantity = $data['quantity'] ?? 1;
 
         if (!$productId) {
@@ -80,5 +86,38 @@ class CartController extends AbstractController
         $this->commandBus->dispatch($command);
 
         return $this->json(['message' => 'Product added to cart'], Response::HTTP_CREATED);
+    }
+
+    #[Route('/api/cart/items/{id}', methods: ['DELETE'])]
+    public function deleteCartItem(string $id): Response
+    {
+        try {
+            $cartItemsId = new CartItemsId($id);
+        } catch (\Exception $e) {
+            return $this->json(['error' => 'Invalid cart item ID'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $command = new RemoveItemFromCartCommand($cartItemsId);
+        $this->commandBus->dispatch($command);
+
+        return $this->json(['message' => 'Product removed from cart'], Response::HTTP_OK);
+    }
+
+    #[Route('/api/cart/items/{id}', methods: ['PUT'])]
+    public function updateCartItemQuantity(string $id, Request $request): Response
+    {
+        try {
+            $cartItemsId = new CartItemsId($id);
+        } catch (\Exception $e) {
+            return $this->json(['error' => 'Invalid cart item ID'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $quantity = $data['quantity'] ?? 0;
+
+        $command = new UpdateCartItemQuantityCommand($cartItemsId, $quantity);
+        $this->commandBus->dispatch($command);
+
+        return $this->json(['message' => 'Product quantity updated'], Response::HTTP_OK);
     }
 }

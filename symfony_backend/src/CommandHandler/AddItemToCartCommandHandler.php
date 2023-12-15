@@ -6,6 +6,9 @@ use App\Command\AddItemToCartCommand;
 use App\Entity\Cart;
 use App\Entity\CartItems;
 use App\Entity\Products;
+use App\ValueObject\CartId;
+use App\ValueObject\ProductId;
+use App\ValueObject\CartItemsId;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
@@ -41,10 +44,10 @@ class AddItemToCartCommandHandler implements MessageHandlerInterface
             // If the product is already in the cart, increment its quantity.
             $cartItem->setQuantity($cartItem->getQuantity() + $command->getQuantity());
         } else {
-            // If the product is not in the cart, add it.
             $cartItem = new CartItems();
-            $cartItem->setCartId($cart);
-            $cartItem->setProductId($product);
+            $cartItem->setId(new CartItemsId(uuid_create(UUID_TYPE_RANDOM)));
+            $cartItem->setCartId(new CartId($cart->getId()));
+            $cartItem->setProductId(new ProductId($product->getId()));
             $cartItem->setQuantity($command->getQuantity());
 
             $this->entityManager->persist($cartItem);

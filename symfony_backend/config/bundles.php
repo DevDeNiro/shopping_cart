@@ -8,4 +8,5 @@ return [
     Doctrine\Bundle\FixturesBundle\DoctrineFixturesBundle::class => ['dev' => true, 'test' => true],
     DigitalCraftsman\Ids\IdsBundle::class => ['all' => true],
     DigitalCraftsman\CQRS\CQRSBundle::class => ['all' => true],
+    Nelmio\CorsBundle\NelmioCorsBundle::class => ['all' => true],
 ];

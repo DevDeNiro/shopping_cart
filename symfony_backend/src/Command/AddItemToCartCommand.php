@@ -2,10 +2,12 @@
 
 namespace App\Command;
 
+use App\ValueObject\CartItemsId;
 use App\ValueObject\ProductId;
 
 class AddItemToCartCommand
 {
+    private CartItemsId $id;
     private string $sessionId;
     private ?ProductId $productId = null;
     private int $quantity;
