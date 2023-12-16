@@ -6,7 +6,9 @@ use App\Command\CreateCartCommand;
 use App\Command\AddItemToCartCommand;
 use App\Command\RemoveItemFromCartCommand;
 use App\Command\UpdateCartItemQuantityCommand;
+use App\Command\CheckoutCartCommand;
 use App\Query\GetCartQuery;
+use App\Query\GetCartDetailsQuery;
 use App\ValueObject\CartId;
 use App\ValueObject\ProductId;
 use App\ValueObject\CartItemsId;
@@ -26,6 +28,7 @@ class CartController extends AbstractController
         $this->commandBus = $commandBus;
     }
 
+    //Create a new cart for the session 
     #[Route('/api/cart', methods: ['POST'])]
     public function createCart(Request $request): Response
     {
@@ -39,6 +42,7 @@ class CartController extends AbstractController
         return $this->json(['id' => $cartId], Response::HTTP_CREATED);
     }
 
+    //Get the cart for the session
     #[Route('/api/cart', methods: ['GET'])]
     public function getCart(Request $request): Response
     {
@@ -65,11 +69,42 @@ class CartController extends AbstractController
         return $this->json(['error' => 'Cart not found'], Response::HTTP_NOT_FOUND);
     }
 
+    //Get the cart details(Including products name and quantity) for the session
+    #[Route('/api/cart/details', methods: ['GET'])]
+    public function getCartDetails(Request $request): Response
+    {
+        $sessionId = $request->headers->get('X-Session-Id');
+        $query = new GetCartDetailsQuery($sessionId);
+        $envelope = $this->commandBus->dispatch($query);
+        $handledStamp = $envelope->last(HandledStamp::class);
+
+        if (!$handledStamp) {
+            return $this->json(['error' => 'Cart not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        $cart = $handledStamp->getResult();
+
+        $cartData = [
+            'id' => (string) $cart['id'],
+            'products' => array_map(function ($item) {
+                return [
+                    'cartItemId' => (string) $item['cartItemId'],
+                    'productName' => $item['productName'],
+                    'price' => $item['price'],
+                    'quantity' => $item['quantity'],
+                ];
+            }, $cart['products']),
+        ];
+
+        return $this->json($cartData);
+    }
+
+    //Add a product to the cart. If the product is already in the cart, increase the quantity
     #[Route('/api/cart/items', methods: ['POST'])]
     public function postCartItems(Request $request): Response
     {
         $sessionId = $request->headers->get('X-Session-Id');
-        
+
         $data = json_decode($request->getContent(), true);
         try {
             $productId = isset($data['productId']) ? new ProductId($data['productId']) : null;
@@ -103,6 +138,7 @@ class CartController extends AbstractController
         return $this->json(['message' => 'Product removed from cart'], Response::HTTP_OK);
     }
 
+    //Update the quantity of a product in the cart
     #[Route('/api/cart/items/{id}', methods: ['PUT'])]
     public function updateCartItemQuantity(string $id, Request $request): Response
     {
@@ -119,5 +155,20 @@ class CartController extends AbstractController
         $this->commandBus->dispatch($command);
 
         return $this->json(['message' => 'Product quantity updated'], Response::HTTP_OK);
+    }
+
+    //Checkout the cart(Delete all the items in the cart)
+    #[Route('/api/cart/checkout', methods: ['DELETE'])]
+    public function checkoutCart(Request $request): Response
+    {
+        try {
+            $sessionId = $request->headers->get('X-Session-Id');
+            $command = new CheckoutCartCommand($sessionId);
+            $this->commandBus->dispatch($command);
+
+            return $this->json(['message' => 'Cart checked out'], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return $this->json(['error' => 'Checkout failed'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }

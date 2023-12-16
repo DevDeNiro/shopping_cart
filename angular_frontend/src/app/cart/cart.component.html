@@ -1,2 +1,52 @@
-<h2>Shopping Cart</h2>
-    <p>This is cart</p>
+<div class="container">
+    <app-navbar></app-navbar>
+    <div class="row justify-content-center">
+        <h2 class="my-4">Shopping Cart</h2>
+        <div class="col-md-8">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Product Name</th>
+                        <th scope="col">Unit Price</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">Total</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let product of products; index as i">
+                        <th scope="row">{{ i + 1 }}</th>
+                        <td>{{ product.productName }}</td>
+                        <td>{{ product.price | currency:'EUR' }}</td>
+                        <td>
+                            <button class="btn btn-outline-primary"
+                                (click)="updateQuantity(product.cartItemId, -1)">-</button>
+                            {{ product.quantity }}
+                            <button class="btn btn-outline-primary"
+                                (click)="updateQuantity(product.cartItemId, 1)">+</button>
+                        </td>
+                        <td>{{ (product.price * product.quantity) | number:'1.2-2' | currency:'EUR' }}</td>
+                        <td>
+                            <button class="btn btn-danger" (click)="deleteProduct(product.cartItemId)">Remove</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-4">
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title">Order Summary</h5>
+                    <p class="card-text">
+                        <strong>Total Items:</strong> {{ products.length }}
+                    </p>
+                    <p class="card-text">
+                        <strong>Total Price:</strong> {{ getTotalPrice() | number:'1.2-2' | currency:'EUR' }}
+                    </p>
+                    <button class="btn btn-primary" (click)="checkout()">Checkout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

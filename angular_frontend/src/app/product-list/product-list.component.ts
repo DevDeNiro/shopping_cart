@@ -1,67 +1,53 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Product } from '../product.model';
-import { ProductService } from '../product.service';
-import { CartService } from '../cart.service';
-import { v4 as uuidv4 } from 'uuid';
+import { Product } from '../models/product.model';
+import { ProductService } from '../services/product.service';
+import { CartService } from '../services/cart.service';
+import { SessionService } from '../services/session.service';
+import { SharedService } from '../services/shared.service';
 
 @Component({
   selector: 'app-product-list',
   templateUrl: './product-list.component.html',
   styleUrls: ['./product-list.component.scss']
 })
-export class ProductListComponent implements OnInit{
+export class ProductListComponent implements OnInit {
   products: Product[] = [];
-  constructor(private router: Router, private productService: ProductService,  private cartService: CartService) { }
+  sessionId: string | null = null;
+
+
+  constructor(
+    private router: Router,
+    private productService: ProductService,
+    private cartService: CartService,
+    private sessionService: SessionService,
+    private sharedService: SharedService
+  ) { }
   ngOnInit() {
     this.getProducts();
-    let sessionId = localStorage.getItem('sessionId');
-    if (!sessionId) {
-      sessionId = uuidv4();
-      localStorage.setItem('sessionId', sessionId);
-    }
-  
-    this.cartService.getCart(sessionId).subscribe(
-      cart => {
-        // If a cart exists for the session, use it.
-        console.log('Cart exists for this session', cart);
-      },
-      error => {
-        // If no cart exists for the session, create a new one.
-        if (error.status == 404) {
-          if (sessionId) {
-            this.cartService.createCart(sessionId).subscribe(
-              newCart => {
-                console.log('New cart created', newCart);
-              },
-              createCartError => {
-                console.error('Error creating cart', createCartError);
-              }
-            );
-          } else {
-            console.error('Session ID is null');
-          }
-        } else {
-          console.error('Error getting cart', error);
-        }
-      }
-    );
+    this.sessionService.checkSession();
+    this.sessionId = localStorage.getItem('sessionId');
   }
   getProducts(): void {
     this.productService.getProducts().subscribe(products => this.products = products);
   }
-  
-  totalItems = 0;
+
   addToCart(product: any): void {
-    this.totalItems++;
-    const sessionId = localStorage.getItem('sessionId');
-    if (sessionId) {
-      this.cartService.addToCart(sessionId, product.id.value, 1).subscribe();
+    if (this.sessionId) {
+      this.cartService.addToCart(this.sessionId, product.id.value, 1).subscribe(
+        () => {
+          this.sharedService.getCartDetails();
+        },
+        error => {
+          console.error('Error adding to cart', error);
+        }
+      );
     } else {
       console.error('Session ID is null');
     }
   }
-  checkout() {
-    this.router.navigate(['/checkout']);
+
+  goToCart() {
+    this.router.navigate(['/cart']);
   }
 }

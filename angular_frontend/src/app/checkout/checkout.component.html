@@ -1,1 +1,61 @@
-<p>checkout works!</p>
+<div class="container">
+    <app-navbar></app-navbar>
+    <div class="row justify-content-center">
+        <h2 class="my-4">Checkout</h2>
+        <div class="col-md-8">
+            <form>
+                <h4 class="mb-3">Customer Details</h4>
+
+                <div class="mb-3">
+                    <label for="name">Name</label>
+                    <input type="text" class="form-control" id="name" placeholder="Your name" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email">Email</label>
+                    <input type="email" class="form-control" id="email" placeholder="name@website.com" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="address">Address</label>
+                    <input type="text" class="form-control" id="address" placeholder="Lorem Str 01, München" required>
+                </div>
+
+                <h4 class="mb-3 mt-4">Payment</h4>
+
+                <div class="d-block my-3">
+                    <div class="custom-control custom-radio">
+                        <input id="credit" name="paymentMethod" type="radio" class="custom-control-input" checked
+                            required>
+                        <label class="custom-control-label" for="credit">Credit card</label>
+                    </div>
+                    <div class="custom-control custom-radio">
+                        <input id="debit" name="paymentMethod" type="radio" class="custom-control-input" required>
+                        <label class="custom-control-label" for="debit">Debit card</label>
+                    </div>
+                    <div class="custom-control custom-radio">
+                        <input id="paypal" name="paymentMethod" type="radio" class="custom-control-input" required>
+                        <label class="custom-control-label" for="paypal">PayPal</label>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-lg btn-block" type="submit" (click)="checkout()">Continue to
+                    checkout</button>
+            </form>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title">Order Summary</h5>
+                    <p class="card-text">
+                        <strong>Total Items:</strong> {{ totalItems }}
+                    </p>
+                    <p class="card-text">
+                        <strong>Total Price:</strong> {{ totalPrice | number:'1.2-2' | currency:'EUR' }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

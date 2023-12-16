@@ -27,15 +27,13 @@ class AddItemToCartCommandHandler implements MessageHandlerInterface
         $productRepository = $this->entityManager->getRepository(Products::class);
         $cartItemRepository = $this->entityManager->getRepository(CartItems::class);
 
+        // Fetch the cart using the session ID
         $cart = $cartRepository->findOneBy(['session_id' => $command->getSessionId()]);
         $product = $productRepository->find($command->getProductId());
 
-        if (!$cart) {
-            throw new \Exception('Cart not found');
-        }
-
-        if (!$product) {
-            throw new \Exception('Product not found');
+        // If the cart or product is not found, throw an exception.
+        if (!$cart || !$product) {
+            throw new \Exception(!$cart ? 'Cart not found' : 'Product not found');
         }
 
         $cartItem = $cartItemRepository->findOneBy(['cart_id' => $cart, 'product_id' => $product]);

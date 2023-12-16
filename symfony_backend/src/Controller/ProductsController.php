@@ -25,6 +25,7 @@ class ProductsController extends AbstractController
         $this->getProductByIdQueryHandler = $getProductByIdQueryHandler;
     }
 
+    //Get all products from the database
     #[Route('/api/products', name: 'Product List', methods: ['GET'])]
     public function index(): JsonResponse
     {
@@ -34,7 +35,7 @@ class ProductsController extends AbstractController
         return new JsonResponse($data, Response::HTTP_OK);
     }
 
-
+    //Get a single product for the given id
     #[Route('/api/products/{id}', name: 'Product Detail', methods: ['GET'])]
     public function show(string $id): JsonResponse
     {
