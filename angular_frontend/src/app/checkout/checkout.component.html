@@ -39,7 +39,8 @@
                     </div>
                 </div>
 
-                <button class="btn btn-primary btn-lg btn-block" type="submit" (click)="checkout()">Continue to
+                <button class="btn btn-primary btn-lg btn-block" type="submit"
+                    (click)="checkout(); $event.preventDefault()">Continue to
                     checkout</button>
             </form>
         </div>

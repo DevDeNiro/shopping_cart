@@ -44,6 +44,8 @@ export class CartService {
 
   checkout(sessionId: string): Observable<any> {
     const headers = { 'X-Session-Id': sessionId };
-    return this.http.delete(`${this.apiUrl}/cart/checkout`, { headers });
+    let result = this.http.delete(`${this.apiUrl}/cart/checkout`, { headers });
+    console.log(result);
+    return result;
   }
 }
